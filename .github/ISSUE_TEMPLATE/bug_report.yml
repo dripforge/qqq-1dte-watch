@@ -1,0 +1,20 @@
+name: Bug report
+description: Report a reproducible failure with synthetic input.
+body:
+  - type: markdown
+    attributes:
+      value: Do not include account data, tokens, private journals or live order identifiers. See SECURITY.md for vulnerability reports.
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node version and commit or release.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Synthetic reproduction
+      description: Steps, input, expected result and actual result.
+    validations:
+      required: true

@@ -1,0 +1,28 @@
+{
+  "name": "qqq-1dte-watch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Auditable QQQ intraday setup research, decision replay, and an experimental broker adapter.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.20.0"
+  },
+  "scripts": {
+    "test": "node scripts/test.mjs",
+    "demo": "node scripts/demo.mjs",
+    "demo:serve": "node scripts/serve-demo.mjs",
+    "check": "node scripts/check.mjs",
+    "check:public": "node scripts/check-public.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "2.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonrogol/qqq-1dte-watch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jonrogol/qqq-1dte-watch/issues"
+  }
+}

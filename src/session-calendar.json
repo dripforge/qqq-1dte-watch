@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "verified_at": "2026-10-08",
+  "valid_from": "2026-01-01",
+  "valid_through": "2028-12-31",
+  "sources": [
+    "https://www.nasdaqtrader.com/Trader.aspx?id=Calendar",
+    "https://www.nasdaq.com/holiday-trading-hours",
+    "https://www.nyse.com/trade/hours-calendars"
+  ],
+  "notes": "Scheduled US equity sessions only. Unexpected exchange closures or halts still require fresh active broker quotes. Uses the QQQ underlying session rather than the later eligible-options close.",
+  "years": {
+    "2026": {
+      "closed": ["2026-01-01", "2026-01-19", "2026-02-16", "2026-04-03", "2026-05-25", "2026-06-19", "2026-07-03", "2026-09-07", "2026-11-26", "2026-12-25"],
+      "early_close": {"2026-11-27": 780, "2026-12-24": 780}
+    },
+    "2027": {
+      "closed": ["2027-01-01", "2027-01-18", "2027-02-15", "2027-03-26", "2027-05-31", "2027-06-18", "2027-07-05", "2027-09-06", "2027-11-25", "2027-12-24"],
+      "early_close": {"2027-11-26": 780}
+    },
+    "2028": {
+      "closed": ["2028-01-17", "2028-02-21", "2028-04-14", "2028-05-29", "2028-06-19", "2028-07-04", "2028-09-04", "2028-11-23", "2028-12-25"],
+      "early_close": {"2028-07-03": 780, "2028-11-24": 780}
+    }
+  }
+}
