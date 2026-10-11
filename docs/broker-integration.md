@@ -25,7 +25,7 @@ Account selection also requires a single active eligible account. Missing identi
 
 ## Deployment work that remains
 
-This release does not install a scheduler, launch agent, watchdog, external heartbeat service or monitoring alerts. The inherited CLIs use source-adjacent mutable state. A production integration needs its own storage isolation, service supervision, restart validation, broker entitlement checks and supervised end-to-end verification.
+This release does not install a scheduler, launch agent, watchdog, external heartbeat service or monitoring alerts. The CLIs use a dedicated runtime directory and source-anchored executables. A production integration still needs service supervision, restart validation, broker entitlement checks and supervised end-to-end verification. Keep every process in that installation on the same runtime path; no old state is migrated automatically.
 
 Do not combine read-only mode with an expectation of order protection: disabled mutations also block protective stop placement and cancellations. Opt-in flags are configuration gates, not a security boundary against code running with your credentials. Tests use mocks and cannot establish broker behavior or execution quality.
 

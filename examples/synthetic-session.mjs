@@ -34,3 +34,23 @@ export function syntheticResearch() {
     complete:item('synthetic-complete',0),gap:item('synthetic-gap',180000,{gap:true}),chase:item('synthetic-chase',360000,{chase:true})
   }};
 }
+
+export function syntheticChecks(version) {
+  return ['incomplete_structure','flat_follow_through','insufficient_risk','offline_boundary'].map((name,i)=>{
+    const offset=(i-3)*300000,setup=syntheticSetup();
+    setup.now=new Date(DEMO_NOW+offset);
+    for(const bars of [setup.fiveMinuteBars,setup.oneMinuteBars])for(const row of bars)row.begins_at=stamp(Date.parse(row.begins_at)+offset);
+    const candidate={version:1,direction:'call',pattern:'break_retest',level:500,
+      break_bar_at:setup.fiveMinuteBars[1].begins_at,confirm_bar_at:setup.fiveMinuteBars[2].begins_at,
+      confirmation_1m_at:setup.oneMinuteBars.at(-1).begins_at,rationale:'Invented completed breakout and retest for offline evaluation.'};
+    if(name==='incomplete_structure')setup.fiveMinuteBars.pop();
+    if(name==='flat_follow_through')setup.oneMinuteBars.at(-1).close_price=setup.oneMinuteBars.at(-1).open_price;
+    const equity=name==='insufficient_risk'?500:10000,id='11111111-1111-4111-8111-111111111111',at=setup.now.toISOString();
+    return {...setup,synthetic:true,name,candidate,
+      health:{at,version,status:'idle',live:true},positions:{positions:[],next:null},orders:[],
+      chain:{id:'synthetic-chain',symbol:'QQQ',can_open_position:true,trade_value_multiplier:100,expiration_dates:['2026-10-09']},
+      instrument:{id,chain_id:'synthetic-chain',type:'call',expiration_date:'2026-10-09',state:'active',tradability:'tradable',strike_price:500},
+      option:{instrument_id:id,updated_at:at,bid_price:1.95,ask_price:2,bid_size:10,ask_size:10},
+      portfolio:{total_value:equity,buying_power:{buying_power:equity,unleveraged_buying_power:equity}},realized:{total_returns:0,data_points:[]}};
+  });
+}

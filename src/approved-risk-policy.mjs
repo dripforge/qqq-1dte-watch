@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -56,7 +57,7 @@ export function assertApprovedRiskPolicy(root, expected) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const root = process.argv[2] ? resolve(process.argv[2]) : dirname(fileURLToPath(import.meta.url));
+    const root = process.argv[2] ? runtimeDirectory(resolve(process.argv[2])) : runtimeDirectory();
     process.stdout.write(JSON.stringify(loadApprovedRiskPolicy(root)) + '\n');
   } catch (error) {
     process.stderr.write(`Policy blocked: ${error.message}\n`);

@@ -1,7 +1,8 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { acquireProcessLock } from './process-lock.mjs';
-const defaultPath=join(dirname(fileURLToPath(import.meta.url)),'broker.lock');
+const defaultPath=join(runtimeDirectory(),'broker.lock');
 export async function withBrokerAccess(action,{lockPath=defaultPath,timeoutMs=12000}={}){
  const began=Date.now();let release;
  for(;;){

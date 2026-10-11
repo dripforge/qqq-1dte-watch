@@ -10,7 +10,7 @@ Follow a setup from completed five-minute candles through one-minute confirmatio
 
 [Quickstart](#quickstart) · [Architecture](docs/architecture.md) · [Research methodology](docs/research.md) · [Broker integration](docs/broker-integration.md) · [Contributing](CONTRIBUTING.md)
 
-![Decision audit using invented data, with searchable explanations and conservative quote replay](docs/assets/demo.png)
+![Decision audit using invented data, with searchable explanations and conservative quote replay](docs/assets/demo.jpg)
 
 *The preview is synthetic. It shows the reporting interface, not historical trades or performance.*
 
@@ -29,7 +29,7 @@ npm run demo:serve
 
 Open **http://127.0.0.1:4173**. Press Ctrl+C to stop the preview server.
 
-The demo writes to `artifacts/demo/` and exercises the real setup scanner and replay engine with invented input. Its four decision-history rows are illustrative records; they are not outputs of a complete trading session. Dependency installation needs network access; the demo itself does not. It does not submit simulated orders to a broker.
+The demo writes to `artifacts/demo/` and exercises the real setup scanner and replay engine with invented input. Its four decision-history rows are calculated from synthetic snapshots using the setup, service, position, contract and risk validators. Room evidence is computed without inventing discretionary approval, and the final execution boundary always blocks orders. Dependency installation needs network access; the demo itself does not. It does not submit simulated orders to a broker.
 
 Expected demo output:
 
@@ -51,6 +51,8 @@ The nine scenarios include usable quote paths, missing evidence, and later asks 
 | Execution modules | Include durable entry intent, position ownership checks, stop reconciliation, order recovery and service-health logic. The experimental adapter is disabled by default. |
 
 “1DTE” here refers to the next supported trading-session expiration. Around weekends or holidays, that can be more than one calendar day away. Contract selection validates the broker's offered expiration dates.
+
+Runtime state defaults to an ignored `runtime/` directory beside `package.json`. Set an absolute `QQQ_RUNTIME_DIR` for a separate installation; source files are never used as the default state directory.
 
 The source contains the decision and protection components of a personal automation. **This release is a developer toolkit, not a hosted bot or a turnkey unattended deployment.** It includes no scheduler, account configuration, approved trading policy, deployment agent, or private journal. No LLM is needed to run the demo or tests; an external agent can supply structured decision evidence to the recorder.
 
@@ -86,22 +88,24 @@ These values demonstrate the implementation; they are not allocation recommendat
 ```bash
 npm run check          # Parse all source and script modules
 npm test               # Synthetic fixtures and mocked broker behavior
-npm run check:public   # Scan Git-tracked files for prohibited runtime data
+npm run check:public   # Scan working files, staged blobs and reachable Git history
+npm run version:show   # Package version used by services and reports
 ```
 
-See [testing](docs/testing.md) for coverage and limits. Release `0.1.0` contains **385 passing tests**. Broker execution has not been validated end-to-end for this public release.
+See [testing](docs/testing.md) for coverage and limits. Release `0.1.0` contains **398 passing tests**. Broker execution has not been validated end-to-end for this public release.
 
 ```text
 src/         Decision, audit, research and execution modules; colocated tests
 examples/    Synthetic session generator and unapproved policy example
 scripts/     Demo, local preview, validation and publication checks
+runtime/     Ignored local state, policies, locks and journals (created at runtime)
 docs/        Architecture, configuration, research and integration notes
 .github/     CI, dependency updates and contribution templates
 ```
 
 ## Roadmap
 
-- [ ] Separate runtime storage from module locations throughout the execution stack.
+- [x] Separate runtime storage from module locations throughout the execution stack.
 - [ ] Add a broker-neutral data adapter and reproducible paper-execution harness.
 - [ ] Expand synthetic scanner and market-feed regression fixtures.
 - [ ] Capture paired Greeks with verified units for attribution.

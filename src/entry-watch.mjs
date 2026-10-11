@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { existsSync, mkdirSync, unlinkSync, realpathSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -8,7 +9,7 @@ import { appendJournal } from './journal.mjs';
 import { boundedMarketReader, durableJson, fastIdleReason, latestPrevious, qqqBars,
   freshQqqQuote, readLocalJson } from './entry-watch-runtime.mjs';
 
-const root=dirname(fileURLToPath(import.meta.url));
+const root=runtimeDirectory();
 function archivePlan(folder,plan,state,reason,now){
   mkdirSync(join(folder,'entry-watch-history'),{recursive:true,mode:0o700});
   durableJson(join(folder,'entry-watch-history'),`${plan.plan_id}.json`,{version:1,plan,state,reason,ended_at:new Date(now).toISOString()});

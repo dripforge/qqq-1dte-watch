@@ -1,3 +1,4 @@
+import { SOURCE_DIR } from './runtime-paths.mjs';
 import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 
@@ -17,7 +18,7 @@ export function validateHeartbeatSecret(value) {
   return {version: 1, ping_url: url.href};
 }
 
-export function loadHeartbeatSecret(folder) {
+export function loadHeartbeatSecret(folder = SOURCE_DIR) {
   const executable = join(folder, 'external-keychain');
   const result = spawnSync(executable, ['get'], {encoding: 'utf8', timeout: 3000, maxBuffer: 4096});
   if (result.status === 2 || result.error?.code === 'ENOENT') return null;

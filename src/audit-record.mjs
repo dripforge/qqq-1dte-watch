@@ -1,3 +1,5 @@
+import { SOURCE_DIR } from './runtime-paths.mjs';
+import { VERSION, PACKAGE_FILE } from './version.mjs';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync, mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -11,7 +13,7 @@ const hash = x => createHash('sha256').update(x).digest('hex');
 function exact(obj, keys) { return obj && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).every(k => keys.includes(k)); }
 
 // Only local program files, never grants, broker records, or account identifiers.
-export function runtimeManifest(folder, now = Date.now()) {
+export function runtimeManifest(folder = SOURCE_DIR, now = Date.now()) {
   const files = readdirSync(folder).filter(name => name.endsWith('.mjs') && !name.endsWith('.test.mjs') || name === 'package.json').sort();
   const hashes = {};
   for (const name of files) {
@@ -19,8 +21,9 @@ export function runtimeManifest(folder, now = Date.now()) {
     if (!stat.isFile() || stat.size > 2 * 1024 * 1024) throw Error('Runtime file exceeds audit bound');
     hashes[name] = hash(readFileSync(path));
   }
+  if (folder === SOURCE_DIR) hashes['package.json'] = hash(readFileSync(PACKAGE_FILE));
   if (!files.length || files.length > 250) throw Error('Runtime manifest unavailable');
-  return { version: AUDIT_VERSION, captured_at: new Date(now).toISOString(), runtime_hash: hash(JSON.stringify(hashes)), files: hashes };
+  return { version: AUDIT_VERSION, application_version: VERSION, captured_at: new Date(now).toISOString(), runtime_hash: hash(JSON.stringify(hashes)), files: hashes };
 }
 
 export function validateDecisionAudit(audit, observedAt) {
@@ -48,9 +51,9 @@ export function validateDecisionAudit(audit, observedAt) {
   return structuredClone(audit);
 }
 
-export function attachDecisionAudit(value, folder, now) {
+export function attachDecisionAudit(value, folder, now, { programFolder = SOURCE_DIR } = {}) {
   try {
-    const manifest = runtimeManifest(folder, now);
+    const manifest = runtimeManifest(programFolder, now);
     mkdirSync(join(folder,'audit-manifests'),{recursive:true});
     const path=join(folder,'audit-manifests',`${manifest.runtime_hash}.json`);
     if(!existsSync(path))writeFileSync(path,JSON.stringify(manifest,null,2)+'\n',{mode:0o600,flag:'wx'});

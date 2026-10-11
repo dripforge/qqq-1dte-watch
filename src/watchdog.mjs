@@ -1,3 +1,5 @@
+import { VERSION } from './version.mjs';
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,7 +11,7 @@ import { appendJournal } from './journal.mjs';
 import { watchdogIssues, changedIssues } from './watchdog-policy.mjs';
 import {loadHeartbeatSecret, heartbeatSignal, sendExternalHeartbeat, HEARTBEAT_INTERVAL_MS} from './external-heartbeat.mjs';
 
-const root = dirname(fileURLToPath(import.meta.url));
+const root = runtimeDirectory();
 const live = process.argv.includes('--live');
 const once = process.argv.includes('--once');
 const stateFiles = ['arm.json', 'entry-intent.json', 'exit-intent.json', 'profit-exit-request.json'];
@@ -53,7 +55,7 @@ try {
       const issues = watchdogIssues({health,
         watch, hasState, session, policyError, stateError, stopPendingAt, now: tick, startedAt});
       if (tick - secretLoadedAt >= 60000 || !secretLoadedAt) {
-        try { secret = loadHeartbeatSecret(root); secretError = false; } catch { secret = null; secretError = true; externalHeartbeat = {status:'configuration_unavailable',phone_delivery_verified:false}; }
+        try { secret = loadHeartbeatSecret(); secretError = false; } catch { secret = null; secretError = true; externalHeartbeat = {status:'configuration_unavailable',phone_delivery_verified:false}; }
         secretLoadedAt = tick;
       }
       if(secretError) issues.push({code:'external_connection_unavailable',urgent:hasState,message:'QQQ external monitoring connection cannot be read. Review the trading task.'});
@@ -77,7 +79,7 @@ try {
         const delivery = notify('QQQ monitoring checks have recovered. Review the task for any trade that needs attention.');
         appendJournal(root, 'watchdog_recovered', {codes: change.recovered.map(issue => issue.code), delivery: delivery.status});
       }
-      atomic('watchdog-status.json', {at: new Date(tick).toISOString(), live, status: issues.length ? 'attention' : 'healthy',
+      atomic('watchdog-status.json', {at: new Date(tick).toISOString(), version:VERSION, live, status: issues.length ? 'attention' : 'healthy',
         issues, notifications, service: health, policy_snapshot: approved?.snapshot ?? null, market_session: session,
         last_watch_at: watch?.observed_at ?? null, external_heartbeat:externalHeartbeat});
       previous = issues;
@@ -92,7 +94,7 @@ try {
       previous = [issue];
       const delivery = await sendExternalHeartbeat({secret,signal:'failure',live});
       externalHeartbeat = {...delivery,connected:!!secret,at:new Date(tick).toISOString()};
-      atomic('watchdog-status.json', {at: new Date().toISOString(), live, status: 'error', issues: previous, notifications,
+      atomic('watchdog-status.json', {at: new Date().toISOString(), version:VERSION, live, status: 'error', issues: previous, notifications,
         message: String(error.message).slice(0, 250),external_heartbeat:externalHeartbeat});
     }
     if (!once) await new Promise(resolve => setTimeout(resolve, Math.max(0, 10000 - (Date.now() - tick))));

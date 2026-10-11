@@ -1,3 +1,5 @@
+import { VERSION } from './version.mjs';
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { requireConfiguredAccount } from './broker-config.mjs';
 import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -22,7 +24,7 @@ import {verifiedExitContext} from './reentry.mjs';
 import {createOwnershipDispatchGuard} from './owned-dispatch.mjs';
 import {researchTradeSample} from './research-trade-sample.mjs';
 
-const root = dirname(fileURLToPath(import.meta.url));
+const root = runtimeDirectory();
 const path = name => join(root, name);
 const live = process.argv.includes('--live');
 const once = process.argv.includes('--once');
@@ -45,7 +47,7 @@ function archiveClosed() {
   for (const [file, suffix] of Object.entries(files)) if (existsSync(path(file))) renameSync(path(file),join(dir,`${stamp}-${suffix}.json`));
   } finally {releaseState();}
 }
-function health(status, extra = {}) { atomic('health.json', { at:new Date().toISOString(), version:'2.5.0', status, live, ...extra }); }
+function health(status, extra = {}) { atomic('health.json', { at:new Date().toISOString(), version:VERSION, status, live, ...extra }); }
 let previousEvent;
 function log(event, extra = {}) {
   const key=JSON.stringify({event,...extra});

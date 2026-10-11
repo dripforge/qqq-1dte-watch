@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { writeDecisionAudit, recordCollectorTelemetry } from './decision-audit.mjs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,7 +7,7 @@ import { durableJson, readLocalJson } from './entry-watch-runtime.mjs';
 import { acquireProcessLock } from './process-lock.mjs';
 import { collectResearchTick, researchIdleReason, RESEARCH_READ_TOOLS, recordResearchCollectorUnavailable } from './research-collector-policy.mjs';
 
-const root=dirname(fileURLToPath(import.meta.url));
+const root=runtimeDirectory();
 // Authentication uses the monitor's saved Keychain grant. This runner never
 // opens an authorization flow and cannot submit or cancel an order.
 export async function runResearchCollectorCycle({folder=root,clock=()=>Date.now(),session={client:null},
@@ -22,7 +23,7 @@ export async function runResearchCollectorCycle({folder=root,clock=()=>Date.now(
     assertIdle();
     const mcp=await mcpLoader();assertIdle();
     if(!session.client){
-      session.client=await mcp.connectReadOnly({timeoutMs:Math.max(1,Math.min(2000,deadline-clock())),lockTimeoutMs:0,
+      session.client=await mcp.connectReadOnly({folder,timeoutMs:Math.max(1,Math.min(2000,deadline-clock())),lockTimeoutMs:0,
         beforeConnect:()=>assertIdle({insideLock:true})});
       assertIdle();
     }
@@ -88,7 +89,7 @@ export async function runResearchCollector({folder=root,once=false,intervalMs=10
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const args=process.argv.slice(2),flag=args.indexOf('--folder');
-  const folder=flag>=0&&args[flag+1]?resolve(args[flag+1]):root;
+  const folder=flag>=0&&args[flag+1]?runtimeDirectory(resolve(args[flag+1])):root;
   const controller=new AbortController();
   process.once('SIGTERM',()=>controller.abort());process.once('SIGINT',()=>controller.abort());
   if(args.some((arg,index)=>!['--live','--once','--folder'].includes(arg)&&!(flag>=0&&index===flag+1))||flag>=0&&!args[flag+1]||

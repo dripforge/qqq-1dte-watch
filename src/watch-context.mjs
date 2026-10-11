@@ -1,3 +1,5 @@
+import { VERSION } from './version.mjs';
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { runtimeManifest } from './audit-record.mjs';
 import { haltContext } from './halt-context.mjs';
 import { readAnalysisPacket } from './analysis-context.mjs';
@@ -40,7 +42,7 @@ export async function readWatchContext(folder, { now = Date.now() } = {}) {
   let critical = !validTime;
   const error = (component, code, message) => errors.push({ component, code, message });
   if (!validTime) error('observation', 'invalid_time', 'The observation time is invalid.');
-  const result = { version: 1, observed_at: validTime ? new Date(time).toISOString() : null,
+  const result = { version: 1, application_version: VERSION, observed_at: validTime ? new Date(time).toISOString() : null,
     market_session: null, calendar_metadata: null, approved_risk: null,
     service_health: null, last_watch: null, last_exit:null,active_state: null, fast_entry:null, candidate_capture:null,
     last_fast_attempt:null,fast_candidates:null,market_context:null,edge_research:null,errors, critical_block: false };
@@ -176,7 +178,7 @@ export async function readWatchContext(folder, { now = Date.now() } = {}) {
         'The previous watch observation is in the future.');
     }
   }
-  try { const manifest = runtimeManifest(folder, time); result.audit_start = { version: 1, started_at: result.observed_at, runtime_hash: manifest.runtime_hash }; }
+  try { const manifest = runtimeManifest(undefined, time); result.audit_start = { version: 1, started_at: result.observed_at, runtime_hash: manifest.runtime_hash }; }
   catch { result.audit_start = null; }
   result.critical_block = critical;
   return result;
@@ -185,7 +187,7 @@ export async function readWatchContext(folder, { now = Date.now() } = {}) {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     if (process.argv.length > 3) throw new Error('usage');
-    const folder = process.argv[2] ? resolve(process.argv[2]) : dirname(fileURLToPath(import.meta.url));
+    const folder = process.argv[2] ? runtimeDirectory(resolve(process.argv[2])) : runtimeDirectory();
     const context = await readWatchContext(folder);
     process.stdout.write(JSON.stringify(context) + '\n');
     if (context.critical_block) process.exitCode = 1;

@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { existsSync, readFileSync, writeFileSync, renameSync, appendFileSync, realpathSync, statSync,
   openSync, readSync, closeSync } from 'node:fs';
 import { dirname, join, resolve, relative, isAbsolute } from 'node:path';
@@ -6,7 +7,7 @@ import { acquireProcessLock } from './process-lock.mjs';
 import { validateResearchEvent, quoteReferenceMovement, RESEARCH_LIMITS } from './research-policy.mjs';
 import { initializeScalpBasis, applyScalpObservation, dueScalpResearch, SCALP_RESEARCH_LIMITS } from './scalp-research.mjs';
 
-const root = dirname(fileURLToPath(import.meta.url));
+const root = runtimeDirectory();
 const MAX_CASES = 200;
 const MAX_SEEN = 1000;
 const HORIZONS = [5, 15, 30];
@@ -284,7 +285,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     const args = process.argv.slice(2);
     const flag = args.indexOf('--folder');
-    const folder = flag >= 0 && args[flag + 1] ? resolve(args[flag + 1]) : root;
+    const folder = flag >= 0 && args[flag + 1] ? runtimeDirectory(resolve(args[flag + 1])) : root;
     if (args[0] === '--schema') process.stdout.write(JSON.stringify(researchSchema()) + '\n');
     else if (args[0] === '--due-scalp') process.stdout.write(JSON.stringify(dueResearchScalps(folder)) + '\n');
     else if (args[0] === '--due') process.stdout.write(JSON.stringify(dueResearchFollowups(folder)) + '\n');

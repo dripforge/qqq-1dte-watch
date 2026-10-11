@@ -79,7 +79,7 @@ export async function boundedMarketReader({folder,clock=()=>Date.now(),session={
   return async(name,args)=>{
     if(!FAST_READ_TOOLS.includes(name))throw Error('fast_watch_read_tool_not_allowed');
     guard();const mcp=await mcpLoader();guard();
-    if(!session.client){session.client=await mcp.connectReadOnly({timeoutMs:Math.max(1,Math.min(2000,deadline-clock())),lockTimeoutMs:0,
+    if(!session.client){session.client=await mcp.connectReadOnly({folder,timeoutMs:Math.max(1,Math.min(2000,deadline-clock())),lockTimeoutMs:0,
       beforeConnect:()=>guard(true)});guard();}
     const remaining=deadline-clock();
     const result=await mcp.call(session.client,name,args,{timeoutMs:Math.max(1,Math.min(2000,remaining)),

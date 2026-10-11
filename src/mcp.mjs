@@ -1,9 +1,13 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
+import { VERSION } from './version.mjs';
+import { join } from 'node:path';
 import { assertBrokerEnabled, assertBrokerCall } from './broker-config.mjs';
 import { spawnSync } from 'node:child_process';
 import { createServer } from 'node:http';
 import { Client, StreamableHTTPClientTransport, UnauthorizedError } from '@modelcontextprotocol/client';
 import { withBrokerAccess } from './broker-access.mjs';
 
+const clientFolders = new WeakMap();
 const MCP_URL = new URL('https://agent.robinhood.com/mcp/trading');
 const CALLBACK_URL = 'http://127.0.0.1:8765/callback';
 
@@ -59,18 +63,20 @@ function transport(provider) {
   return new StreamableHTTPClientTransport(MCP_URL, { authProvider: provider });
 }
 
-export async function connectReadOnly({timeoutMs=15000,lockTimeoutMs=12000,beforeConnect}={}) {
+export async function connectReadOnly({timeoutMs=15000,lockTimeoutMs=12000,beforeConnect,folder}={}) {
   assertBrokerEnabled();
+  const root = runtimeDirectory(folder);
   const provider = new KeychainOAuthProvider();
-  const client = new Client({ name: 'qqq-1dte-watch', version: '0.1.0' });
-  await withBrokerAccess(async()=>{await beforeConnect?.();return client.connect(transport(provider), { timeout: timeoutMs });},{timeoutMs:lockTimeoutMs});
+  const client = new Client({ name: 'qqq-1dte-watch', version: VERSION });
+  clientFolders.set(client, root);
+  await withBrokerAccess(async()=>{await beforeConnect?.();return client.connect(transport(provider), { timeout: timeoutMs });},{timeoutMs:lockTimeoutMs,lockPath:join(root,'broker.lock')});
   return client;
 }
 
 export async function authorize() {
   assertBrokerEnabled();
   const provider = new KeychainOAuthProvider();
-  const client = new Client({ name: 'qqq-1dte-watch', version: '0.1.0' });
+  const client = new Client({ name: 'qqq-1dte-watch', version: VERSION });
   let callbackResolve, callbackReject;
   const callback = new Promise((resolve, reject) => {
     callbackResolve = resolve; callbackReject = reject;
@@ -141,5 +147,5 @@ export async function call(client, name, args, { beforeSend,timeoutMs=10000,maxT
     };
     await beforeSend?.({read});
     return execute(name,args);
-  },{timeoutMs:lockTimeoutMs});
+  },{timeoutMs:lockTimeoutMs,lockPath:join(clientFolders.get(client)??runtimeDirectory(),'broker.lock')});
 }

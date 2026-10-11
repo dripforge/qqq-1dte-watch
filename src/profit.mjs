@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { requireConfiguredAccount } from './broker-config.mjs';
 import { randomUUID } from 'node:crypto';
 import { readFileSync, writeFileSync, renameSync, existsSync } from 'node:fs';
@@ -15,7 +16,7 @@ import { buildProfitResearchEvent, safeRecordResearchEvent } from './research-ho
 import { createProfitProtectionPlan, validateProfitProtectionEvidence } from './profit-protection.mjs';
 import { assertOwnedPositionSnapshot } from './position-ownership.mjs';
 
-const root=dirname(fileURLToPath(import.meta.url));
+const root=runtimeDirectory();
 const path=name=>join(root,name);
 const args=process.argv.slice(2),[action,arg,reason]=args;
 const evidenceFlag=args.indexOf('--evidence-json');

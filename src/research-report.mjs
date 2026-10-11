@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { dirname, resolve, join } from 'node:path';
 import { existsSync,readFileSync,statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -69,7 +70,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     const args = process.argv.slice(2);
     const flag = args.indexOf('--folder');
-    const folder = flag >= 0 && args[flag + 1] ? resolve(args[flag + 1]) : dirname(fileURLToPath(import.meta.url));
+    const folder = flag >= 0 && args[flag + 1] ? runtimeDirectory(resolve(args[flag + 1])) : runtimeDirectory();
     if (args.includes('--write')) writeEdgeResearchReport(folder);
     const report = summarizeResearch(folder);
     process.stdout.write((args.includes('--json') ? JSON.stringify(report) : renderResearchReport(report)) + '\n');

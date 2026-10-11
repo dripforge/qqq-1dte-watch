@@ -9,6 +9,7 @@ The offline demo has no required environment variables. `npm run demo` always us
 | `QQQ_ENABLE_BROKER` | Disabled | Exactly `1` permits adapter connections/read calls. |
 | `QQQ_ENABLE_LIVE_ORDERS` | Disabled | Exactly `1`, plus broker opt-in, permits supported order mutations. |
 | `QQQ_ACCOUNT_NUMBER` | Unset | Exact eligible account identity; no suffix matching or automatic selection. |
+| `QQQ_RUNTIME_DIR` | Project `runtime/` | Optional absolute directory for private state and shared process locks. |
 
 `.env.example` is a template, not an automatically loaded file. Keep real values in your local environment or secret manager. The public adapter uses a separate Keychain service namespace from any previous private installation.
 
@@ -27,6 +28,10 @@ All session gates use America/New_York with daylight-saving handling. Regular-se
 Weekend and scheduled-holiday sessions are closed. Session metadata is in `src/session-calendar.json`, including its coverage and source URLs. A scheduler is external to this repository; closed-session logic does not stop an arbitrary scheduler from waking a process.
 
 ## Local state
+
+Policies, journals, health, order intent, locks and saved research default to `runtime/` beside `package.json`. Source and helper executables remain in `src/`. The runtime path does not depend on the shell working directory. Every service in one installation must use the same `QQQ_RUNTIME_DIR`. Explicit CLI report paths can use `artifacts/` or an external directory.
+
+There is no automatic migration from old source-adjacent files. While fully stopped and with no unresolved orders or positions, an operator can review and transfer required state to the new runtime location. Never start a second installation against the same account to bypass unresolved state.
 
 The report CLI accepts an explicit folder:
 

@@ -1,3 +1,4 @@
+import { runtimeDirectory, SOURCE_DIR } from './runtime-paths.mjs';
 import { spawn } from 'node:child_process';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +16,7 @@ import { appendJournal } from './journal.mjs';
 import { boundedMarketReader, durableJson, fastIdleReason, fastLocalState, freshQqqQuote,
   latestPrevious, qqqBars, readLocalJson, fastReason } from './entry-watch-runtime.mjs';
 
-const root=dirname(fileURLToPath(import.meta.url));
+const root=runtimeDirectory();
 export function dispatchExistingEntry({folder,plan,assessment,spawnImpl=spawn,node=process.execPath,clock=()=>Date.now(),
   timeoutMs=180000,signal}){
   const dispatch=buildEntryDispatch(plan,assessment,{now:clock()});
@@ -29,7 +30,7 @@ export function dispatchExistingEntry({folder,plan,assessment,spawnImpl=spawn,no
       finish({status:'outcome_unknown',exit_code:null,reason:'Entry process interrupted or exceeded its deadline; reconcile the original intent, never repeat this plan.'});
       try{child?.kill('SIGTERM');}catch{}
     };
-    try{child=spawnImpl(node,[join(folder,'entry.mjs'),...dispatch.args,'--setup-json',evidence,'--entry-watch-plan',plan.plan_id],{cwd:folder,stdio:['ignore','pipe','pipe']});}
+    try{child=spawnImpl(node,[join(SOURCE_DIR,'entry.mjs'),...dispatch.args,'--setup-json',evidence,'--entry-watch-plan',plan.plan_id],{cwd:folder,env:{...process.env,QQQ_RUNTIME_DIR:runtimeDirectory(folder)},stdio:['ignore','pipe','pipe']});}
     catch{return finish({status:'dispatch_failed',exit_code:null,reason:'entry_process_start_failed'});}
     for(const stream of [child.stdout,child.stderr])stream?.on('data',chunk=>{if(output.length<16384)output+=String(chunk).slice(0,16384-output.length);});
     child.once('error',()=>finish({status:'dispatch_failed',exit_code:null,reason:'entry_process_start_failed'}));

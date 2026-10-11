@@ -1,3 +1,4 @@
+import { SOURCE_DIR, runtimeDirectory } from './runtime-paths.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
@@ -98,15 +99,17 @@ test('unsent plan cancellation changes only local instructions and keeps reviewa
   }finally{rmSync(folder,{recursive:true,force:true});}
 });
 test('bounded child timeout is outcome unknown and retains exact evidence and plan arguments',async()=>{
-  const folder=fixture(),b=broker();let killed=false,args;
+  const folder=fixture(),b=broker();let killed=false,args,childOptions;
   try{
     await prepareAgentEntryWatch(input(),options(folder,b));const plan=readLocalJson(folder,'entry-watch-plan.json');
     const assessment=assessEntryWatchPlan({plan,state:readLocalJson(folder,'entry-watch-state.json'),policySnapshot:loadApprovedRiskPolicy(folder).snapshot,
       now:NOW,health:readLocalJson(folder,'health.json'),localState:{trade_state_present:false,entry_busy:false},
       qqqQuote:quote(),fiveMinuteBars:five(),oneMinuteBars:minute()});
     const result=await dispatchExistingEntry({folder,plan,assessment,clock:()=>NOW,timeoutMs:1,
-      spawnImpl:(node,argv)=>{args=argv;const child=new EventEmitter();child.stdout=new EventEmitter();child.stderr=new EventEmitter();child.kill=()=>{killed=true;};return child;}});
+      spawnImpl:(node,argv,options)=>{args=argv;childOptions=options;const child=new EventEmitter();child.stdout=new EventEmitter();child.stderr=new EventEmitter();child.kill=()=>{killed=true;};return child;}});
     assert.equal(result.status,'outcome_unknown');assert.equal(killed,true);
+    assert.equal(args[0],join(SOURCE_DIR,'entry.mjs'));
+    assert.equal(childOptions.env.QQQ_RUNTIME_DIR,runtimeDirectory(folder));
     assert.deepEqual(args.slice(1,5),[ID,'call','2026-10-12','100.6']);
     assert.deepEqual(args.slice(-2),['--entry-watch-plan',plan.plan_id]);
     assert.equal(readLocalJson(folder,`entry-watch-evidence-${plan.plan_id}.json`).confirmation_1m_at,minute().at(-1).begins_at);

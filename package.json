@@ -13,7 +13,8 @@
     "demo": "node scripts/demo.mjs",
     "demo:serve": "node scripts/serve-demo.mjs",
     "check": "node scripts/check.mjs",
-    "check:public": "node scripts/check-public.mjs"
+    "check:public": "node scripts/check-public.mjs",
+    "version:show": "node src/version.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.3.1"

@@ -24,7 +24,7 @@ Setup discovery uses references established before a completed break. A later co
 
 A recorded check may include nine stages: session, service, position, structure, follow-through, room, contract, risk and entry. Each stage is `pass`, `block`, `not_evaluated` or `unavailable`. Legacy records retain their original summary; the report does not reconstruct missing stage outcomes.
 
-Program manifests hash on-disk modules, excluding test files, plus a package manifest when present in the same directory. This identifies bytes observed by the recorder. It does not prove that a resident process has loaded those bytes; service version and freshness are separate evidence. Release version `0.1.0` is the public distribution version; the inherited protection engine reports its internal version `2.5.0`.
+Program manifests hash on-disk modules, excluding test files, plus the root package manifest. This identifies bytes observed by the recorder. It does not prove that a resident process has loaded those bytes; service version and freshness are separate evidence. `package.json` is the single application-version source for the monitor, MCP client, audit reports and version CLI. Schema versions describe data formats and remain independent of the application version.
 
 ## Order state is a separate concern
 
@@ -36,4 +36,8 @@ Protection logic evaluates filled-position evidence and broker stop state indepe
 
 No background service is installed by this repository. The core supports periodic checks, but one-minute timing requires an external scheduler and measured runtime. Long-running checks, market closures and scheduler behavior can produce completion gaps.
 
-Several inherited CLI modules store mutable files next to their source. `artifacts/demo/` is isolated; advanced integration must use a dedicated disposable checkout with restricted filesystem permissions. Do not point this distribution at an existing installation or share its credential namespace. Moving all runtime state behind an injected storage adapter is an explicit roadmap item.
+Mutable state defaults to an ignored `runtime/` directory anchored to the project, independent of the working directory. An absolute `QQQ_RUNTIME_DIR` selects an external installation. CLI paths reject source directories, repository metadata and symlinks into those locations. Explicit report folders may use ignored `artifacts/`. Newly created runtime directories use owner-only permissions.
+
+Child entry processes execute the source program and inherit the selected runtime directory through their environment. Broker connections retain that runtime location for subsequent lock acquisition. Code fingerprints always hash source modules and `package.json`; manifests are saved under the runtime directory. Swift helper executables and immutable session metadata remain in `src/`.
+
+Existing state is never automatically moved or loaded from `src/`. Reconfigure all processes consistently before a supervised deployment. Do not switch runtime directories while an order or position needs reconciliation.

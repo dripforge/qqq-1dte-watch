@@ -23,8 +23,8 @@ test('audit rejects future evidence, forming bars, invalid fields and missing st
 test('runtime manifest hashes program bytes and detects a changed running revision',t=>{
  const p=folder(t);writeFileSync(join(p,'a.mjs'),'export const x=1;');const m=runtimeManifest(p,NOW);
  const value={observed_at:stamp(NOW),audit:{...audit(),runtime_hash:m.runtime_hash}};
- assert.equal(attachDecisionAudit(value,p,NOW).runtime_matches_start,true);
- writeFileSync(join(p,'a.mjs'),'export const x=2;');const changed=attachDecisionAudit(value,p,NOW);
+ assert.equal(attachDecisionAudit(value,p,NOW,{programFolder:p}).runtime_matches_start,true);
+ writeFileSync(join(p,'a.mjs'),'export const x=2;');const changed=attachDecisionAudit(value,p,NOW,{programFolder:p});
  assert.equal(changed.runtime_matches_start,false);assert.equal(changed.check_duration_ms,30000);
  assert.ok(existsSync(join(p,changed.runtime_manifest_at_record.manifest_file)));
 });

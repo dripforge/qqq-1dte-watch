@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { requireConfiguredAccount } from './broker-config.mjs';
 import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
@@ -20,10 +21,10 @@ import { createProfitProtectionPlan, validateProfitProtectionEvidence, validateP
 import { requireFreshReentry,recentExitContext } from './reentry.mjs';
 import {assertFlatPositionSnapshot} from './owned-dispatch.mjs';
 import {validatePositionSnapshot} from './position-ownership.mjs';
-import {requireNearMoneyContract} from './contract-selection.mjs';
+import {requireNearMoneyContract,validateOptionMarket} from './contract-selection.mjs';
 import {readEntryWatchPlan,readEntryWatchState,validateEntryWatchClaim,entryAttemptPrevious,assertDirectEntryPlanClear,refreshClaimedEntryEvidence} from './entry-watch-plan.mjs';
 
-const root = dirname(fileURLToPath(import.meta.url));
+const root = runtimeDirectory();
 const armPath = join(root, 'arm.json');
 const intentPath = join(root, 'entry-intent.json');
 const lockPath = join(root, 'entry.lock');
@@ -175,13 +176,7 @@ async function main() {
     const strike = asNumber(instrument.strike_price, 'Strike');
     const contractSelection=requireNearMoneyContract({direction:optionType,strike,qqqPrice:stockPrice});
     const option = optionQuoteResult.results?.find(x => x?.quote?.instrument_id === optionId)?.quote;
-    if (!fresh(option?.updated_at)) fail('Option quote is stale');
-    const ask = asNumber(option.ask_price, 'Option ask');
-    const bid = asNumber(option.bid_price, 'Option bid');
-    if (bid <= 0 || ask < bid || ask <= 0 || !Number.isFinite(Number(option.ask_size)) || !Number.isFinite(Number(option.bid_size)) || Number(option.ask_size) < 1 || Number(option.bid_size) < 1) {
-      fail('Option market is not liquid');
-    }
-    if (ask - bid > Math.min(0.10, (ask + bid) / 2 * 0.05) + 1e-8) fail('Option spread exceeds 5% of midpoint or $0.10');
+    const {ask,bid}=validateOptionMarket(option,{now:Date.now(),optionId});
     const risk = reserveRisk({ portfolio, premium: ask, brokerRealized: brokerDailyRealized(pnl),
       localRealized: journalDailyRealized(root, now.date), policy });
 

@@ -1,3 +1,5 @@
+import { VERSION } from './version.mjs';
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { validateDecisionAudit, attachDecisionAudit } from './audit-record.mjs';
 import { readFileSync, writeFileSync, renameSync, realpathSync, statSync, existsSync } from 'node:fs';
 import { dirname, join, resolve, relative, isAbsolute } from 'node:path';
@@ -7,7 +9,7 @@ import { acquireProcessLock } from './process-lock.mjs';
 import { readServiceHealth } from './service-health.mjs';
 import { loadApprovedRiskPolicy } from './approved-risk-policy.mjs';
 
-const root = dirname(fileURLToPath(import.meta.url));
+const root = runtimeDirectory();
 const outcomes = new Set(['no_setup', 'entry_blocked', 'entry_submitted', 'holding', 'profit_action',
   'market_closed', 'data_unavailable', 'error']);
 const unknownCounts = new Set(['market_closed', 'data_unavailable', 'error']);
@@ -89,7 +91,7 @@ export function recordWatchRun(inputPath, { folder = root, now = Date.now() } = 
     }
     const service = readServiceHealth(actualRoot, { now });
     const serviceFields = Object.fromEntries(Object.entries(service).filter(([key]) => key.startsWith('service_')));
-    const record = { ...value, recorded_at: new Date(now).toISOString(), ...serviceFields, engine_reported_version: service.reported_version ?? null,
+    const record = { ...value, application_version: VERSION, recorded_at: new Date(now).toISOString(), ...serviceFields, engine_reported_version: service.reported_version ?? null,
       policy_status: policySnapshot ? 'approved' : 'unavailable', policy_snapshot_at_record: policySnapshot, decision_audit: attachDecisionAudit(value, actualRoot, now) };
     appendJournal(actualRoot, 'watch_run', record);
     const temporary = `${latest}.${process.pid}.tmp`;

@@ -1,3 +1,4 @@
+import { runtimeDirectory } from './runtime-paths.mjs';
 import { HALT_URL,parseHalts,haltContext } from './halt-context.mjs';
 import { existsSync,readFileSync,statSync,appendFileSync,mkdirSync } from 'node:fs';
 import { dirname,join,resolve } from 'node:path';
@@ -8,7 +9,7 @@ import { researchIdleReason } from './research-collector-policy.mjs';
 import { marketSession } from './session.mjs';
 import { ANALYSIS_VERSION,COMPARISON_SYMBOLS,QUOTE_SYMBOLS,summarizeBars,summarizeQuotes,summarizeIndexes,summarizeDepth,readAnalysisPacket } from './analysis-context.mjs';
 import { normalizeEarnings,eventContext,refreshOneCalendar,boundedPublicFetch } from './event-context.mjs';
-const root=dirname(fileURLToPath(import.meta.url));
+const root=runtimeDirectory();
 export const ANALYSIS_READ_TOOLS=Object.freeze(['get_equity_historicals','get_equity_quotes','get_indexes','get_index_quotes','get_earnings_calendar','get_equity_price_book']);
 const iso=n=>new Date(n).toISOString();
 export function readEventCache(folder){
@@ -31,7 +32,7 @@ export async function collectAnalysisCycle({folder=root,clock=()=>Date.now(),ses
   const read=async(name,args)=>{
    if(!ANALYSIS_READ_TOOLS.includes(name))throw Error('analysis_read_not_allowed');guard();
    const mcp=await mcpLoader();guard();
-   if(!session.client)session.client=await mcp.connectReadOnly({timeoutMs:Math.max(1,Math.min(1000,deadline-clock())),lockTimeoutMs:0,beforeConnect:()=>guard(true)});
+   if(!session.client)session.client=await mcp.connectReadOnly({folder,timeoutMs:Math.max(1,Math.min(1000,deadline-clock())),lockTimeoutMs:0,beforeConnect:()=>guard(true)});
    guard();const remaining=deadline-clock();
    // Count after the final dispatch guard so max four calls can actually be sent.
    return mcp.call(session.client,name,args,{timeoutMs:Math.max(1,Math.min(1000,remaining)),maxTotalTimeoutMs:Math.max(1,Math.min(1200,remaining)),lockTimeoutMs:0,beforeSend:()=>{guard(true);reads++;}});
