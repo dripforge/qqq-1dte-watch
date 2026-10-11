@@ -76,7 +76,7 @@ Every stage can remain unavailable or unevaluated. A missing minute is not evide
 ## Defaults and boundaries
 
 - Broker connections and order mutations require separate explicit opt-ins. Account selection requires an exact configured identity.
-- The illustrative premium ceiling is $325 per one-contract opening; arithmetic defaults reserve 1% of equity per trade and 3% per day, with a $250 absolute daily ceiling. No approved policy ships with the project.
+- Risk limits are configurable. The unapproved example uses round demonstration values: 1% of equity per trade, 3% per day, a $100 absolute daily loss ceiling and a $300 premium ceiling per contract. These are examples to customize, not recommended account settings. No approved policy ships with the project.
 - Regular-session new entries stop at **3:58 p.m. Eastern**. Early-close entry cutoffs and expiration-day exits have separate rules. See [configuration](docs/configuration.md).
 - Buffered invalidation uses ten completed one-minute bars. Tighter setup-based stops remain research-only.
 - Replay does not interpolate missing quotes, chase a changed price, treat midpoint marks as fills, or infer unavailable historical stage checks.
@@ -92,7 +92,7 @@ npm run check:public   # Scan working files, staged blobs and reachable Git hist
 npm run version:show   # Package version used by services and reports
 ```
 
-See [testing](docs/testing.md) for coverage and limits. Release `0.1.0` contains **398 passing tests**. Broker execution has not been validated end-to-end for this public release.
+See [testing](docs/testing.md) for coverage and limits. Release `0.1.1` contains **398 passing tests**. Broker execution has not been validated end-to-end for this public release.
 
 ```text
 src/         Decision, audit, research and execution modules; colocated tests

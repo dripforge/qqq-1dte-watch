@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1 — 2026-10-11
+
+- Replace account-specific public defaults with round, configurable demonstration limits: $300 premium per contract and $100 absolute daily loss. The 1% per-trade and 3% daily arithmetic defaults remain illustrative.
+- Keep the unapproved example, arithmetic defaults, research selection and documentation consistent. No approved policy or live-order opt-in is included.
+- Move the fixed research replay to specification version 2 with a $300 premium cap. Its changed hash invalidates verification of earlier freezes; a new prospective freeze is required.
+
 ## 0.1.0 — 2026-10-11
 
 First public release of QQQ 1DTE Watch.

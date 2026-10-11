@@ -75,7 +75,7 @@ test('collector prices a new case without a cash snapshot, visibly unknown for l
   assert.equal(sent.filter(call=>call.name==='get_option_quotes').length,1);
   assert.equal(sent[2].args.expiration_dates,'2026-10-09');assert.equal(sent[2].args.type,'put');
   const item=readResearchState(f.folder).cases[f.id];assert.equal(item.baseline_selection_context.affordability,'unknown');
-  assert.equal(item.baseline_selection_context.entry_gate.status,'unknown');assert.equal(item.baseline_selection_context.premium_ceiling_dollars,325);
+  assert.equal(item.baseline_selection_context.entry_gate.status,'unknown');assert.equal(item.baseline_selection_context.premium_ceiling_dollars,300);
   assert.equal(item.bases.case.reference_observed_at,stamp(now));
   assert.ok(sent.every(call=>call.options.lockTimeoutMs===0&&call.options.timeoutMs<=2000&&call.options.maxTotalTimeoutMs<=2500));
 });
@@ -94,7 +94,7 @@ test('fresh cash and fresh gate provenance are preserved for a prospective quote
     entry_gate:{status:'blocked',reason:'Daily loss gate blocked this setup.',checked_at:stamp(now)}},{folder:f.folder,now});
   const result=await collectResearchTick({folder:f.folder,broker,clock:()=>now});assert.equal(result.priced_cases,1);
   const context=readResearchState(f.folder).cases[f.id].baseline_selection_context;
-  assert.equal(context.premium_ceiling_dollars,325);assert.equal(context.affordability,'verified_snapshot');assert.equal(context.entry_gate.status,'blocked');
+  assert.equal(context.premium_ceiling_dollars,300);assert.equal(context.affordability,'verified_snapshot');assert.equal(context.entry_gate.status,'blocked');
 });
 test('old cases expire without broker work or invented baselines, with deduplicated gaps',async t=>{
   const f=fixture(t),now=BASE+900001,{broker,sent}=fake(()=>now);
@@ -235,7 +235,7 @@ test('monitor health and trading locks are rechecked immediately before a read c
 
 test('collector cannot establish a new baseline above the approved premium limit',async t=>{
  const f=fixture(t),now=BASE+30000;
- const {broker}=fake(()=>now,{overrides:{get_option_quotes:(data)=>({results:data.results.map(row=>({quote:{...row.quote,bid_price:'3.20',ask_price:'3.26'}}))})}});
+ const {broker}=fake(()=>now,{overrides:{get_option_quotes:(data)=>({results:data.results.map(row=>({quote:{...row.quote,bid_price:'3.20',ask_price:'3.01'}}))})}});
  const result=await collectResearchTick({folder:f.folder,broker,clock:()=>now});
  assert.equal(result.priced_cases,0);assert.equal(readResearchState(f.folder).cases[f.id].bases.case.reference_observed_at,null);
 });

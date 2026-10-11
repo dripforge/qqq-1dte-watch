@@ -17,7 +17,9 @@ The offline demo has no required environment variables. `npm run demo` always us
 
 `examples/policy.example.json` documents the schema and has `approved: false`. It is deliberately rejected by the approval validator. There is no shipped `src/policy.json` and no command that automatically approves a policy.
 
-A live policy requires every field, an explicit approval flag, revision and UTC recording timestamp. Changes invalidate the saved policy snapshot. The public arithmetic defaults are 1% of equity per trade and 3% per day with a $250 absolute daily ceiling, $325 opening premium ceiling and $1 execution cushion. Those numbers are illustrative engineering defaults. Approved policies can differ within schema bounds; the default function does not constrain an explicit policy to these percentages.
+A live policy requires every field, an explicit approval flag, revision and UTC recording timestamp. Changes invalidate the saved policy snapshot. The public arithmetic defaults and unapproved example use 1% of equity per trade and 3% per day, with a $100 absolute daily loss ceiling, $300 opening premium ceiling and $1 execution cushion. These round demonstration values are not recommended account settings; configure every limit for your own use before approving a policy. Approved policies can differ within schema bounds; the default function does not constrain an explicit policy to these percentages.
+
+The daily budget is the smaller of the configured absolute ceiling and the equity-based daily limit. The per-trade budget is checked separately, so an affordable premium can still exceed the risk budget. The offline replay uses a fixed $300 research premium cap; changing a live policy does not change that replay specification. Version 0.1.1 changes the replay specification hash, so earlier freezes must not be treated as verified under the new specification.
 
 Planned risk reserves 25% of the opening premium plus the cushion, matching the inherited broker-stop model. **Reserved risk is not maximum possible loss.** Gap moves, outages, rejected orders and option liquidity can produce losses beyond the planned amount.
 

@@ -1,6 +1,6 @@
 {
   "name": "qqq-1dte-watch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Auditable QQQ intraday setup research, decision replay, and an experimental broker adapter.",
   "type": "module",

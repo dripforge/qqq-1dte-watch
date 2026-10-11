@@ -36,7 +36,7 @@ test('position-cost realized loss reaches daily capacity while unknown fees rema
     const realized=journalDailyRealized(root,'2026-10-08');
     assert.equal(realized.pnl_basis,'broker_position_cost_unknown_fees');
     const portfolio={total_value:'400',cash:'400',buying_power:{buying_power:'400',unleveraged_buying_power:'400'}};
-    const risk=reserveRisk({policy:{per_trade_risk_fraction:.70,daily_loss_fraction:.50},portfolio,premium:2,brokerRealized:{realized_pnl:0,number_of_trades:0},localRealized:realized});
+    const risk=reserveRisk({policy:{per_trade_risk_fraction:.70,daily_loss_fraction:.50,absolute_daily_loss:250},portfolio,premium:2,brokerRealized:{realized_pnl:0,number_of_trades:0},localRealized:realized});
     assert.equal(risk.remaining_daily_risk,100);
   }finally{rmSync(root,{recursive:true,force:true});}
 });

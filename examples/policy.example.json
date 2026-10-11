@@ -6,8 +6,8 @@
   "recorded_at": "2026-01-01T00:00:00Z",
   "per_trade_risk_fraction": 0.01,
   "daily_loss_fraction": 0.03,
-  "absolute_daily_loss": 250,
+  "absolute_daily_loss": 100,
   "emergency_stop_fraction": 0.25,
   "execution_cushion": 1,
-  "opening_premium_ceiling": 325
+  "opening_premium_ceiling": 300
 }

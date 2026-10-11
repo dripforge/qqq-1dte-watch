@@ -1,4 +1,6 @@
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { validateApprovedRiskPolicy } from './approved-risk-policy.mjs';
 import assert from 'node:assert/strict';
 import { assertBrokerEnabled, assertBrokerCall, requireConfiguredAccount } from './broker-config.mjs';
 import { connectReadOnly, call } from './mcp.mjs';
@@ -35,5 +37,15 @@ test('disabled adapter rejects before credentials, networking or client dispatch
 test('public arithmetic defaults constrain small accounts without authorizing execution', () => {
   assert.equal(DEFAULT_RISK_POLICY.per_trade_risk_fraction,.01);
   assert.equal(DEFAULT_RISK_POLICY.daily_loss_fraction,.03);
+  const example=JSON.parse(readFileSync(new URL('../examples/policy.example.json',import.meta.url),'utf8'));
+  for(const [key,value] of Object.entries(DEFAULT_RISK_POLICY)) assert.equal(example[key],value);
+  assert.equal(example.approved,false);
+  assert.throws(()=>validateApprovedRiskPolicy(example),/approval/);
+  const portfolio={total_value:10000,buying_power:{buying_power:10000,unleveraged_buying_power:10000}};
+  const result=reserveRisk({portfolio,premium:3,brokerRealized:{realized_pnl:0}});
+  assert.equal(result.daily_limit,100);
+  assert.equal(result.planned_risk,76);
+  assert.throws(()=>reserveRisk({portfolio,premium:3.01,brokerRealized:{realized_pnl:0}}),/premium/);
+  assert.throws(()=>reserveRisk({portfolio,premium:3,brokerRealized:{realized_pnl:-25}}),/remaining daily/);
   assert.throws(()=>reserveRisk({portfolio:{total_value:500,buying_power:{buying_power:500,unleveraged_buying_power:500}},premium:2,brokerRealized:{realized_pnl:0}}),/trade risk/);
 });

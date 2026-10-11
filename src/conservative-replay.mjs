@@ -3,9 +3,9 @@ import { createHash } from 'node:crypto';
 import { timeMs } from './audit-record.mjs';
 import { groupResearchEpisodes } from './edge-comparisons.mjs';
 
-export const REPLAY_SPEC = Object.freeze({ version: 1, horizon_seconds: 60, maximum_lateness_seconds: 20,
+export const REPLAY_SPEC = Object.freeze({ version: 2, horizon_seconds: 60, maximum_lateness_seconds: 20,
   maximum_quote_age_seconds: 5, maximum_path_gap_seconds: 20, quantity: 1, multiplier: 100,
-  premium_cap_dollars: 325, session_split: { calibration_sessions: 20, evaluation_sessions: 10 },
+  premium_cap_dollars: 300, session_split: { calibration_sessions: 20, evaluation_sessions: 10 },
   scenarios: [{ name: 'immediate_touch', latency_seconds: 0, slippage_per_side: 0 },
     { name: 'ten_second_delay', latency_seconds: 10, slippage_per_side: 0.01 },
     { name: 'thirty_second_delay', latency_seconds: 30, slippage_per_side: 0.03 }],

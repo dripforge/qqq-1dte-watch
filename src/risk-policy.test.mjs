@@ -5,7 +5,7 @@ import { loadApprovedRiskPolicy, validateApprovedRiskPolicy, assertApprovedRiskP
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-const reserveRisk = input => reserveRiskBase({...input, policy: {per_trade_risk_fraction:0.70,daily_loss_fraction:0.50,...input.policy}});
+const reserveRisk = input => reserveRiskBase({...input, policy: {per_trade_risk_fraction:0.70,daily_loss_fraction:0.50,absolute_daily_loss:250,opening_premium_ceiling:500,...input.policy}});
 const portfolio = { total_value: '500', cash: '500', buying_power: {
   buying_power: '500', unleveraged_buying_power: '500' } };
 const zero = { realized_pnl: 0, number_of_trades: 0 };
@@ -97,30 +97,30 @@ test('missing, truncated and legacy unversioned policy files cannot fall back to
 });
 
 
-test('approved $325 cap permits $3.25 but blocks $3.26 including original-limit retries',()=>{
-  const record={...approvedRecord,revision:2,opening_premium_ceiling:325};
+test('approved $300 cap permits $3.00 but blocks $3.01 including original-limit retries',()=>{
+  const record={...approvedRecord,revision:2,opening_premium_ceiling:300};
   const {policy}=validateApprovedRiskPolicy(record);
-  assert.equal(riskPolicy().opening_premium_ceiling,325);
-  assert.doesNotThrow(()=>reserveRisk({portfolio,premium:3.25,brokerRealized:zero,policy}));
-  assert.throws(()=>reserveRisk({portfolio,premium:3.26,brokerRealized:zero,policy}),/premium/);
-  assert.throws(()=>reserveRisk({portfolio:{...portfolio,buying_power:{buying_power:'325',unleveraged_buying_power:'325'}},premium:3.25,brokerRealized:zero,policy}),/buying-power/);
+  assert.equal(riskPolicy().opening_premium_ceiling,300);
+  assert.doesNotThrow(()=>reserveRisk({portfolio,premium:3.00,brokerRealized:zero,policy}));
+  assert.throws(()=>reserveRisk({portfolio,premium:3.01,brokerRealized:zero,policy}),/premium/);
+  assert.throws(()=>reserveRisk({portfolio:{...portfolio,buying_power:{buying_power:'300',unleveraged_buying_power:'300'}},premium:3.00,brokerRealized:zero,policy}),/buying-power/);
   for(const opening_premium_ceiling of [0,-1,500.01])assert.throws(()=>riskPolicy({opening_premium_ceiling}),/invalid/);
 });
 
 
 test('affordability uses broker buying power even when cash lags reusable sale proceeds',()=>{
  const funded={...portfolio,cash:'10',buying_power:{buying_power:'400',unleveraged_buying_power:'400'}};
- assert.equal(reserveRisk({portfolio:funded,premium:3.25,brokerRealized:zero}).spendable,400);
- for(const cash of [undefined,null,'unknown'])assert.doesNotThrow(()=>reserveRisk({portfolio:{...funded,cash},premium:3.25,brokerRealized:zero}));
- assert.throws(()=>reserveRisk({portfolio:funded,premium:3.26,brokerRealized:zero}),/premium/);
+ assert.equal(reserveRisk({portfolio:funded,premium:3.00,brokerRealized:zero}).spendable,400);
+ for(const cash of [undefined,null,'unknown'])assert.doesNotThrow(()=>reserveRisk({portfolio:{...funded,cash},premium:3.00,brokerRealized:zero}));
+ assert.throws(()=>reserveRisk({portfolio:funded,premium:4.01,brokerRealized:zero}),/buying-power/);
 });
 test('removing the raw cash gate cannot authorize leverage, deficits or missing spendable data',()=>{
  for(const buying_power of [{buying_power:'1000',unleveraged_buying_power:'200'},
   {buying_power:'200',unleveraged_buying_power:'1000'},
   {buying_power:'1000',unleveraged_buying_power:'-1'}]){
-  assert.throws(()=>reserveRisk({portfolio:{...portfolio,cash:'1000',buying_power},premium:3.25,brokerRealized:zero}),/unleveraged/);
+  assert.throws(()=>reserveRisk({portfolio:{...portfolio,cash:'1000',buying_power},premium:3.00,brokerRealized:zero}),/unleveraged/);
  }
  for(const buying_power of [null,{buying_power:null,unleveraged_buying_power:'400'},{buying_power:'400',unleveraged_buying_power:null}]){
-  assert.throws(()=>reserveRisk({portfolio:{...portfolio,buying_power},premium:3.25,brokerRealized:zero}),/unavailable/);
+  assert.throws(()=>reserveRisk({portfolio:{...portfolio,buying_power},premium:3.00,brokerRealized:zero}),/unavailable/);
  }
 });

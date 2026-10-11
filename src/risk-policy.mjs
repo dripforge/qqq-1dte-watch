@@ -1,6 +1,6 @@
 export const DEFAULT_RISK_POLICY = Object.freeze({ per_trade_risk_fraction: 0.01, daily_loss_fraction: 0.03,
-  absolute_daily_loss: 250, emergency_stop_fraction: 0.25, execution_cushion: 1,
-  opening_premium_ceiling: 325 });
+  absolute_daily_loss: 100, emergency_stop_fraction: 0.25, execution_cushion: 1,
+  opening_premium_ceiling: 300 });
 
 function number(value, name) {
   if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) {

@@ -16,7 +16,7 @@ const NOW=Date.parse('2026-10-09T14:15:02Z'),stamp=value=>new Date(value).toISOS
 const ID='00000000-0000-4000-8000-000000000001';
 const policy={schema_version:1,policy_id:'qqq-1dte-risk',revision:2,approved:true,recorded_at:'2026-10-08T22:47:04Z',
   per_trade_risk_fraction:.7,daily_loss_fraction:.5,absolute_daily_loss:250,emergency_stop_fraction:.25,
-  execution_cushion:1,opening_premium_ceiling:325};
+  execution_cushion:1,opening_premium_ceiling:300};
 const bar=(at,o,h,l,c)=>({begins_at:at,open_price:String(o),high_price:String(h),low_price:String(l),close_price:String(c),interpolated:false,session:'reg'});
 const five=()=>[bar('2026-10-09T13:55:00.000Z',99,100,98,99),bar('2026-10-09T14:00:00.000Z',99,101,99,100.5),
   bar('2026-10-09T14:05:00.000Z',100.5,101.5,100.2,101),bar('2026-10-09T14:10:00.000Z',101,101.6,100.7,101.2)];
